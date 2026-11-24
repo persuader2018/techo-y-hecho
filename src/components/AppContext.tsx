@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import {
   VIVIENDAS_DEMO,
+  type FotoEstadoInicial,
   type IncidenciaDemo,
   type MovimientoDemo,
   type RolUsuario,
@@ -40,10 +41,17 @@ interface AppContextType {
   marcarMovimientoPagado: (movId: string) => void;
   verificarMovimientoPropietario: (movId: string) => void;
   crearMovimiento: (mov: Omit<MovimientoDemo, "id" | "estado">) => void;
-  crearIncidencia: (inc: Omit<IncidenciaDemo, "id" | "fechaReporte" | "diasRestantesPlazo15" | "estado">) => void;
-  responderIncidenciaPropietario: (incId: string, propuesta: string) => void;
+  crearIncidencia: (
+    inc: Omit<IncidenciaDemo, "id" | "fechaReporte" | "diasRestantesPlazo15" | "estado">
+  ) => void;
+  aprobarPresupuestoInquilino: (incId: string, nota?: string) => void;
+  aprobarEnviarTecnico: (incId: string, propuesta: string) => void;
+  denegarIncidenciaPropietario: (incId: string, motivo: string) => void;
+  darConformidadInquilino: (incId: string) => void;
   simularVencimiento15Dias: (incId: string) => void;
   aplicarDescuentoIncidencia: (incId: string, importeFactura: number) => void;
+  agregarFotoEstadoInicial: (foto: Omit<FotoEstadoInicial, "id" | "fecha">) => void;
+  actualizarInquicheckPasaporte: (idInquicheck: string, adjuntar: boolean) => void;
   crearNuevaVivienda: (datos: {
     direccion: string;
     municipio: string;
@@ -100,7 +108,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           }
         : {
             nombre: rol === "propietario" ? "Javier Mendoza" : "Elena Soler",
-            email: rol === "propietario" ? "javier.mendoza@ejemplo.es" : "elena.soler@ejemplo.es",
+            email:
+              rol === "propietario"
+                ? "javier.mendoza@ejemplo.es"
+                : "elena.soler@ejemplo.es",
             rol,
             esDemo: true,
           }
@@ -110,7 +121,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const entrarDemo = (rol: RolUsuario) => {
     setUsuario({
       nombre: rol === "propietario" ? "Javier Mendoza" : "Elena Soler",
-      email: rol === "propietario" ? "javier.mendoza@ejemplo.es" : "elena.soler@ejemplo.es",
+      email:
+        rol === "propietario"
+          ? "javier.mendoza@ejemplo.es"
+          : "elena.soler@ejemplo.es",
       rol,
       esDemo: true,
     });
@@ -128,9 +142,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       email,
       password,
     });
-    if (error) {
-      return { ok: false, error: error.message };
-    }
+    if (error) return { ok: false, error: error.message };
     const meta = data.user?.user_metadata || {};
     setUsuario({
       nombre: meta.nombre_completo || email.split("@")[0],
@@ -160,36 +172,25 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: {
-        data: { nombre_completo: nombre, rol },
-      },
+      options: { data: { nombre_completo: nombre, rol } },
     });
-    if (error) {
-      return { ok: false, error: error.message };
-    }
+    if (error) return { ok: false, error: error.message };
     if (data.session && codigoVinculacion?.trim()) {
       await supabase.rpc("vincular_contrato_por_codigo", {
         p_codigo: codigoVinculacion.trim(),
       });
     }
-    setUsuario({
-      nombre,
-      email,
-      rol,
-      esDemo: false,
-    });
+    setUsuario({ nombre, email, rol, esDemo: false });
     return {
       ok: true,
       mensaje: data.session
-        ? "Cuenta creada y sesión iniciada correctamente en Supabase."
-        : "Cuenta creada en Supabase. Revisa tu correo para confirmar el acceso (también puedes explorar el modo Demo mientras tanto).",
+        ? "Cuenta creada e iniciada en Supabase."
+        : "Cuenta creada. Revisa tu correo para confirmar el acceso.",
     };
   };
 
   const cerrarSesion = async () => {
-    if (supabase) {
-      await supabase.auth.signOut();
-    }
+    if (supabase) await supabase.auth.signOut();
     setUsuario(null);
   };
 
@@ -230,14 +231,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   const crearMovimiento = (mov: Omit<MovimientoDemo, "id" | "estado">) => {
-    const nuevo: MovimientoDemo = {
-      ...mov,
-      id: `mov-${Date.now()}`,
-      estado: "pendiente",
-    };
     actualizarVivienda((v) => ({
       ...v,
-      movimientos: [nuevo, ...v.movimientos],
+      movimientos: [{ ...mov, id: `mov-${Date.now()}`, estado: "pendiente" }, ...v.movimientos],
     }));
   };
 
@@ -253,7 +249,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         year: "numeric",
       }),
       diasRestantesPlazo15: 15,
-      estado: "abierta",
+      estado: "pendiente_aprobacion",
     };
     actualizarVivienda((v) => ({
       ...v,
@@ -261,12 +257,68 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }));
   };
 
-  const responderIncidenciaPropietario = (incId: string, propuesta: string) => {
+  const aprobarPresupuestoInquilino = (incId: string, nota?: string) => {
     actualizarVivienda((v) => ({
       ...v,
       incidencias: v.incidencias.map((i) =>
         i.id === incId
-          ? { ...i, propuestaPropietario: propuesta, estado: "en_proceso" }
+          ? {
+              ...i,
+              estado: "aprobada_presupuesto",
+              respuestaPropietario:
+                nota ||
+                `Presupuesto de ${i.presupuestoInquilinoEur ?? "—"} € aprobado por el propietario. Puedes proceder y confirmar al finalizar.`,
+            }
+          : i
+      ),
+    }));
+  };
+
+  const aprobarEnviarTecnico = (incId: string, propuesta: string) => {
+    actualizarVivienda((v) => ({
+      ...v,
+      incidencias: v.incidencias.map((i) =>
+        i.id === incId
+          ? {
+              ...i,
+              estado: "aprobada_tecnico",
+              respuestaPropietario: propuesta,
+            }
+          : i
+      ),
+    }));
+  };
+
+  const denegarIncidenciaPropietario = (incId: string, motivo: string) => {
+    actualizarVivienda((v) => ({
+      ...v,
+      incidencias: v.incidencias.map((i) =>
+        i.id === incId
+          ? {
+              ...i,
+              estado: "denegada",
+              motivoDenegacion: motivo,
+            }
+          : i
+      ),
+    }));
+  };
+
+  const darConformidadInquilino = (incId: string) => {
+    const hoy = new Date().toLocaleDateString("es-ES", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+    actualizarVivienda((v) => ({
+      ...v,
+      incidencias: v.incidencias.map((i) =>
+        i.id === incId
+          ? {
+              ...i,
+              estado: "resuelta_conforme",
+              conformidadInquilinoFecha: hoy,
+            }
           : i
       ),
     }));
@@ -297,14 +349,45 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         {
           id: `comp-${Date.now()}`,
           tipo: "compensacion",
-          concepto: `Compensación Art. 21.1 LAU (reparación urgente tras plazo 15d)`,
+          concepto: "Compensación Art. 21.1 LAU (reparación urgente)",
           periodoMes: "Noviembre 2026",
           importeEur: -Math.abs(importeFactura),
           estado: "verificado_propietario",
-          fechaVencimiento: "Aplicado en próxima renta",
+          fechaVencimiento: "Descontado en próxima renta",
         },
         ...v.movimientos,
       ],
+    }));
+  };
+
+  const agregarFotoEstadoInicial = (
+    foto: Omit<FotoEstadoInicial, "id" | "fecha">
+  ) => {
+    actualizarVivienda((v) => ({
+      ...v,
+      fotosEstadoInicial: [
+        {
+          ...foto,
+          id: `foto-${Date.now()}`,
+          fecha: new Date().toLocaleDateString("es-ES", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          }),
+        },
+        ...v.fotosEstadoInicial,
+      ],
+    }));
+  };
+
+  const actualizarInquicheckPasaporte = (
+    idInquicheck: string,
+    adjuntar: boolean
+  ) => {
+    actualizarVivienda((v) => ({
+      ...v,
+      idPasaporteInquicheck: idInquicheck,
+      solvenciaInquicheckAdjunta: adjuntar,
     }));
   };
 
@@ -333,11 +416,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       imagenUrl: "/images/vivienda-valencia.jpg",
       esZonaTensionada,
       rentaBaseEur,
-      gastosComunidadEur: 0,
-      tasaResiduosEur: 0,
       fianzaEur: rentaBaseEur,
       inquilinoNombre: emailInquilino ? emailInquilino.split("@")[0] : "Pendiente de vincular",
       inquilinoEmail: emailInquilino || "pendiente@ejemplo.es",
+      fotosEstadoInicial: [],
       movimientos: [
         {
           id: `mov-init-${Date.now()}`,
@@ -365,7 +447,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setViviendaActivaId(existente.id);
       return {
         ok: true,
-        mensaje: `Contrato ${existente.codigoVinculacion} (${existente.alias}) vinculado correctamente.`,
+        mensaje: `Contrato ${existente.codigoVinculacion} (${existente.alias}) vinculado.`,
       };
     }
     if (supabase && usuario && !usuario.esDemo) {
@@ -378,7 +460,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
     return {
       ok: false,
-      mensaje: `No encontramos el código "${limpio}". Prueba con MAD-2026-B o VAL-2026-A.`,
+      mensaje: `Código "${limpio}" no encontrado. Prueba con MAD-2026-B o VAL-2026-A.`,
     };
   };
 
@@ -398,9 +480,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         verificarMovimientoPropietario,
         crearMovimiento,
         crearIncidencia,
-        responderIncidenciaPropietario,
+        aprobarPresupuestoInquilino,
+        aprobarEnviarTecnico,
+        denegarIncidenciaPropietario,
+        darConformidadInquilino,
         simularVencimiento15Dias,
         aplicarDescuentoIncidencia,
+        agregarFotoEstadoInicial,
+        actualizarInquicheckPasaporte,
         crearNuevaVivienda,
         vincularPorCodigo,
       }}

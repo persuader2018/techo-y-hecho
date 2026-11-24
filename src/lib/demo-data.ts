@@ -2,32 +2,51 @@ export type RolUsuario = "inquilino" | "propietario";
 
 export interface MovimientoDemo {
   id: string;
-  tipo: "renta" | "luz" | "agua" | "gas" | "internet" | "comunidad" | "compensacion";
+  tipo: "renta" | "luz" | "agua" | "gas" | "internet" | "compensacion";
   concepto: string;
   periodoMes: string;
   importeEur: number;
-  descuentoLegalEur?: number;
   estado: "pendiente" | "pagado_inquilino" | "verificado_propietario";
   fechaVencimiento: string;
   fechaPago?: string;
 }
 
+export type EstadoIncidencia =
+  | "pendiente_aprobacion"
+  | "aprobada_presupuesto"
+  | "aprobada_tecnico"
+  | "denegada"
+  | "resuelta_conforme"
+  | "descuento_aplicado";
+
 export interface IncidenciaDemo {
   id: string;
   titulo: string;
   descripcion: string;
-  categoria: string;
   urgencia: "baja" | "media" | "alta" | "urgente";
   responsableIa: "propietario" | "inquilino" | "revisar";
   articuloLau: string;
   dictamenIa: string;
   guiaEmergencia: string;
   busquedaBricolaje?: string;
+  fotos: string[];
+  presupuestoInquilinoEur?: number;
+  notaPresupuestoInquilino?: string;
   diasRestantesPlazo15: number;
-  estado: "abierta" | "en_proceso" | "resuelta" | "descuento_aplicado";
-  propuestaPropietario?: string;
+  estado: EstadoIncidencia;
+  respuestaPropietario?: string;
+  motivoDenegacion?: string;
   facturaDescuentoEur?: number;
   fechaReporte: string;
+  conformidadInquilinoFecha?: string;
+}
+
+export interface FotoEstadoInicial {
+  id: string;
+  estancia: string;
+  url: string;
+  fecha: string;
+  nota: string;
 }
 
 export interface CertificadoReputacionDemo {
@@ -59,8 +78,6 @@ export interface ViviendaContratoDemo {
   mesActualContrato: number;
   mesesTotalesContrato: number;
   rentaBaseEur: number;
-  gastosComunidadEur: number;
-  tasaResiduosEur: number;
   fianzaEur: number;
   organismoFianza: string;
   numeroDepositoFianza: string;
@@ -70,6 +87,8 @@ export interface ViviendaContratoDemo {
   inquilinoNombre: string;
   inquilinoEmail: string;
   idPasaporteInquicheck: string;
+  solvenciaInquicheckAdjunta: boolean;
+  fotosEstadoInicial: FotoEstadoInicial[];
   movimientos: MovimientoDemo[];
   incidencias: IncidenciaDemo[];
   certificadoInquilino: CertificadoReputacionDemo;
@@ -94,8 +113,6 @@ export const VIVIENDAS_DEMO: ViviendaContratoDemo[] = [
     mesActualContrato: 35,
     mesesTotalesContrato: 60,
     rentaBaseEur: 1200,
-    gastosComunidadEur: 55,
-    tasaResiduosEur: 25,
     fianzaEur: 1200,
     organismoFianza: "IVIMA · Agencia de Vivienda Social de Madrid",
     numeroDepositoFianza: "DEP-28912-M",
@@ -105,20 +122,50 @@ export const VIVIENDAS_DEMO: ViviendaContratoDemo[] = [
     inquilinoNombre: "Elena Soler",
     inquilinoEmail: "elena.soler@ejemplo.es",
     idPasaporteInquicheck: "#IC-E42GC2",
+    solvenciaInquicheckAdjunta: true,
+    fotosEstadoInicial: [
+      {
+        id: "foto-ini-1",
+        estancia: "Salón principal y suelos de roble",
+        url: "/images/vivienda-madrid.jpg",
+        fecha: "15 Ene 2024",
+        nota: "Paredes recién pintadas, tarima sin arañazos y balcones sellados.",
+      },
+    ],
     movimientos: [
       {
-        id: "mov-1",
+        id: "mov-r1",
         tipo: "renta",
-        concepto: "Mensualidad Noviembre 2026 (Renta + Comunidad + Tasa)",
+        concepto: "Mensualidad Noviembre 2026",
         periodoMes: "Noviembre 2026",
-        importeEur: 1280,
+        importeEur: 1200,
         estado: "pendiente",
         fechaVencimiento: "05 Dic 2026",
       },
       {
-        id: "mov-2",
+        id: "mov-r2",
+        tipo: "renta",
+        concepto: "Mensualidad Octubre 2026",
+        periodoMes: "Octubre 2026",
+        importeEur: 1200,
+        estado: "verificado_propietario",
+        fechaVencimiento: "05 Oct 2026",
+        fechaPago: "02 Oct 2026",
+      },
+      {
+        id: "mov-r3",
+        tipo: "renta",
+        concepto: "Mensualidad Septiembre 2026",
+        periodoMes: "Septiembre 2026",
+        importeEur: 1200,
+        estado: "verificado_propietario",
+        fechaVencimiento: "05 Sep 2026",
+        fechaPago: "03 Sep 2026",
+      },
+      {
+        id: "mov-s1",
         tipo: "luz",
-        concepto: "Suministro Eléctrico · Factura Oct–Nov (OCR IA)",
+        concepto: "Iberdrola · Electricidad Noviembre",
         periodoMes: "Noviembre 2026",
         importeEur: 64.4,
         estado: "pagado_inquilino",
@@ -126,9 +173,19 @@ export const VIVIENDAS_DEMO: ViviendaContratoDemo[] = [
         fechaPago: "22 Nov 2026",
       },
       {
-        id: "mov-3",
+        id: "mov-s2",
+        tipo: "luz",
+        concepto: "Iberdrola · Electricidad Octubre",
+        periodoMes: "Octubre 2026",
+        importeEur: 58.1,
+        estado: "verificado_propietario",
+        fechaVencimiento: "28 Oct 2026",
+        fechaPago: "25 Oct 2026",
+      },
+      {
+        id: "mov-s3",
         tipo: "agua",
-        concepto: "Canal de Isabel II · Consumo Bimestral",
+        concepto: "Canal de Isabel II · Bimestre Sep-Oct",
         periodoMes: "Octubre 2026",
         importeEur: 31.8,
         estado: "verificado_propietario",
@@ -136,50 +193,61 @@ export const VIVIENDAS_DEMO: ViviendaContratoDemo[] = [
         fechaPago: "12 Oct 2026",
       },
       {
-        id: "mov-4",
-        tipo: "renta",
-        concepto: "Mensualidad Octubre 2026 (Renta Oficial)",
-        periodoMes: "Octubre 2026",
-        importeEur: 1280,
+        id: "mov-s4",
+        tipo: "gas",
+        concepto: "Naturgy · Calefacción y Agua Caliente",
+        periodoMes: "Noviembre 2026",
+        importeEur: 49.5,
+        estado: "pendiente",
+        fechaVencimiento: "02 Dic 2026",
+      },
+      {
+        id: "mov-s5",
+        tipo: "internet",
+        concepto: "Fibra 600Mb · Mensualidad Noviembre",
+        periodoMes: "Noviembre 2026",
+        importeEur: 32.0,
         estado: "verificado_propietario",
-        fechaVencimiento: "05 Oct 2026",
-        fechaPago: "02 Oct 2026",
+        fechaVencimiento: "01 Nov 2026",
+        fechaPago: "01 Nov 2026",
       },
     ],
     incidencias: [
       {
         id: "inc-1",
-        titulo: "Filtración y pérdida de presión en caldera Junkers Cerapur",
+        titulo: "Pérdida de presión en caldera Junkers",
         descripcion:
-          "La caldera pierde presión cada 24 horas y gotea agua caliente por la válvula de seguridad al encender la calefacción.",
-        categoria: "Climatización y agua caliente",
+          "La caldera pierde presión cada 24 horas y gotea agua caliente por la válvula al encender la calefacción.",
         urgencia: "alta",
         responsableIa: "propietario",
-        articuloLau: "Art. 21.1 LAU (Conservación y habitabilidad)",
+        articuloLau: "Art. 21.1 LAU (Habitabilidad)",
         dictamenIa:
-          "La calefacción y el agua caliente son elementos esenciales de habitabilidad. Al tratarse de un fallo interno por desgaste estructural y no por mal uso, corresponde al propietario asumir la reparación sin derecho a subir la renta.",
+          "La calefacción y agua caliente son esenciales. Al ser desgaste estructural, corresponde al propietario repararlo sin subir la renta.",
         guiaEmergencia:
-          "Coloca un recipiente bajo la válvula de seguridad y cierra la llave de llenado inferior para evitar sobrepresión hasta la visita del técnico.",
+          "Coloca un recipiente bajo la válvula y cierra la llave de llenado inferior hasta que llegue el técnico.",
+        fotos: ["/images/vivienda-madrid.jpg"],
+        presupuestoInquilinoEur: 145,
+        notaPresupuestoInquilino: "Presupuesto de Servicio Técnico Junkers local (cambio válvula + purgado).",
         diasRestantesPlazo15: 10,
-        estado: "abierta",
+        estado: "pendiente_aprobacion",
         fechaReporte: "19 Nov 2026",
       },
       {
         id: "inc-2",
-        titulo: "Cinta de persiana del dormitorio principal deshilachada",
+        titulo: "Cinta de persiana del dormitorio",
         descripcion:
-          "La cinta textil de la persiana se ha desgastado por el uso diario y cuesta subirla del todo.",
-        categoria: "Carpintería / Uso ordinario",
+          "La cinta textil se ha deshilachado por el uso diario tras casi tres años.",
         urgencia: "baja",
         responsableIa: "inquilino",
-        articuloLau: "Art. 21.4 LAU (Pequeña reparación por desgaste ordinario)",
+        articuloLau: "Art. 21.4 LAU (Uso ordinario)",
         dictamenIa:
-          "La sustitución de una cinta de persiana por uso cotidiano entra dentro de las pequeñas reparaciones derivadas del desgaste ordinario, por lo que corresponde asumirla al inquilino.",
-        guiaEmergencia:
-          "Evita tirar con fuerza de la cinta deshilachada para que no se rompa dentro del tambor superior.",
+          "Pequeña reparación por desgaste normal diario. Corresponde al inquilino.",
+        guiaEmergencia: "No tirar con fuerza para evitar que se suelte el tambor.",
         busquedaBricolaje: "como cambiar cinta de persiana facil paso a paso",
+        fotos: [],
         diasRestantesPlazo15: 14,
-        estado: "resuelta",
+        estado: "resuelta_conforme",
+        conformidadInquilinoFecha: "08 Oct 2026",
         fechaReporte: "03 Oct 2026",
       },
     ],
@@ -192,7 +260,7 @@ export const VIVIENDAS_DEMO: ViviendaContratoDemo[] = [
       horasRespuestaMedia: 6,
       mesesVerificados: 34,
       enlaceInquicheck: "https://inquicheck.vercel.app/",
-      selloVerificacion: "Historial verificado · 34 de 34 rentas puntuales",
+      selloVerificacion: "34 de 34 mensualidades puntuales · Cero daños reportados",
     },
     certificadoCasero: {
       codigo: "TYH-REP-PRO-418M",
@@ -203,7 +271,7 @@ export const VIVIENDAS_DEMO: ViviendaContratoDemo[] = [
       horasRespuestaMedia: 18,
       mesesVerificados: 34,
       enlaceInquicheck: "https://inquicheck.vercel.app/",
-      selloVerificacion: "Fianza depositada en IVIMA · Respuesta media < 24 h",
+      selloVerificacion: "Fianza en IVIMA · Respuesta media a averías < 24 h",
     },
   },
   {
@@ -223,8 +291,6 @@ export const VIVIENDAS_DEMO: ViviendaContratoDemo[] = [
     mesActualContrato: 22,
     mesesTotalesContrato: 60,
     rentaBaseEur: 890,
-    gastosComunidadEur: 0,
-    tasaResiduosEur: 0,
     fianzaEur: 890,
     organismoFianza: "Generalitat Valenciana · Conselleria de Hacienda",
     numeroDepositoFianza: "GVA-46023-881",
@@ -234,11 +300,21 @@ export const VIVIENDAS_DEMO: ViviendaContratoDemo[] = [
     inquilinoNombre: "Marcos Domínguez",
     inquilinoEmail: "marcos.dominguez@ejemplo.es",
     idPasaporteInquicheck: "#IC-V91MK4",
+    solvenciaInquicheckAdjunta: true,
+    fotosEstadoInicial: [
+      {
+        id: "foto-val-1",
+        estancia: "Salón-comedor y ventanales",
+        url: "/images/vivienda-valencia.jpg",
+        fecha: "01 Feb 2025",
+        nota: "Suelo hidráulico íntegro y carpintería en perfecto estado.",
+      },
+    ],
     movimientos: [
       {
         id: "mov-v1",
         tipo: "renta",
-        concepto: "Mensualidad Noviembre 2026 (Renta Oficial)",
+        concepto: "Mensualidad Noviembre 2026",
         periodoMes: "Noviembre 2026",
         importeEur: 890,
         estado: "verificado_propietario",
@@ -248,30 +324,39 @@ export const VIVIENDAS_DEMO: ViviendaContratoDemo[] = [
       {
         id: "mov-v2",
         tipo: "gas",
-        concepto: "Gas Natural · Factura Bimestral",
+        concepto: "Gas Natural · Bimestre Oct-Nov",
         periodoMes: "Noviembre 2026",
         importeEur: 42.15,
         estado: "pendiente",
         fechaVencimiento: "30 Nov 2026",
       },
+      {
+        id: "mov-v3",
+        tipo: "luz",
+        concepto: "Electricidad Noviembre",
+        periodoMes: "Noviembre 2026",
+        importeEur: 51.2,
+        estado: "verificado_propietario",
+        fechaVencimiento: "20 Nov 2026",
+        fechaPago: "18 Nov 2026",
+      },
     ],
     incidencias: [
       {
         id: "inc-v1",
-        titulo: "Humedad en techo del baño procedente del bajante",
+        titulo: "Humedad en techo del baño (bajante)",
         descripcion:
-          "Ha aparecido una mancha de humedad en el techo junto al tubo general de desagüe comunitario.",
-        categoria: "Fontanería / Comunidad",
+          "Mancha de humedad en el techo junto al tubo general de desagüe comunitario.",
         urgencia: "alta",
         responsableIa: "propietario",
-        articuloLau: "Art. 21.1 LAU + Ley de Propiedad Horizontal",
+        articuloLau: "Art. 21.1 LAU + Propiedad Horizontal",
         dictamenIa:
-          "Las filtraciones de bajantes comunitarios son ajenas al inquilino. El propietario debe dar parte inmediato al seguro de hogar y a la comunidad de propietarios.",
-        guiaEmergencia:
-          "Ventila el baño, haz fotos con fecha visible y evita encender el foco eléctrico cercano a la humedad.",
+          "Filtración de bajante comunitario ajena al inquilino. Debe atenderlo el propietario con el seguro.",
+        guiaEmergencia: "Ventila el baño y evita encender el foco cercano.",
+        fotos: ["/images/vivienda-valencia.jpg"],
         diasRestantesPlazo15: 12,
-        estado: "en_proceso",
-        propuestaPropietario: "Parte abierto con el seguro; el perito acude el jueves a las 10:30.",
+        estado: "aprobada_tecnico",
+        respuestaPropietario: "Parte abierto con el seguro; el perito acude el jueves a las 10:30.",
         fechaReporte: "21 Nov 2026",
       },
     ],
@@ -284,7 +369,7 @@ export const VIVIENDAS_DEMO: ViviendaContratoDemo[] = [
       horasRespuestaMedia: 8,
       mesesVerificados: 22,
       enlaceInquicheck: "https://inquicheck.vercel.app/",
-      selloVerificacion: "Historial verificado · 22 de 22 rentas puntuales",
+      selloVerificacion: "22 de 22 mensualidades puntuales",
     },
     certificadoCasero: {
       codigo: "TYH-REP-PRO-418M",
@@ -295,7 +380,7 @@ export const VIVIENDAS_DEMO: ViviendaContratoDemo[] = [
       horasRespuestaMedia: 18,
       mesesVerificados: 22,
       enlaceInquicheck: "https://inquicheck.vercel.app/",
-      selloVerificacion: "Fianza depositada en GVA · Respuesta media < 24 h",
+      selloVerificacion: "Fianza en GVA · Respuesta media < 24 h",
     },
   },
 ];

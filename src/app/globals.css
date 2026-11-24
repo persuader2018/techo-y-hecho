@@ -95,3 +95,16 @@
 .animate-enter {
   animation: fadeUp 480ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
+
+@media print {
+  header,
+  footer,
+  nav,
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: #ffffff !important;
+    color: #161513 !important;
+  }
+}
