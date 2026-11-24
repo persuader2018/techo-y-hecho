@@ -1,0 +1,18 @@
+{
+  "name": "Techo y Hecho — Gestión de Alquiler Residencial",
+  "short_name": "Techo y Hecho",
+  "description": "Plataforma editorial y transparente para la gestión diaria entre propietarios e inquilinos en España. Ley 12/2023, RDL 29/2026 e IA jurídica.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fbf9f4",
+  "theme_color": "#161513",
+  "lang": "es-ES",
+  "icons": [
+    {
+      "src": "/images/logo-techoyhecho.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ]
+}
