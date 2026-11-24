@@ -17,7 +17,7 @@ import { useApp } from "@/components/AppContext";
 type SubTab = "certificado" | "evaluador";
 
 export default function PasaportePage() {
-  const { viviendaActiva, actualizarInquicheckPasaporte } = useApp();
+  const { usuario, viviendaActiva, actualizarInquicheckPasaporte } = useApp();
   const inquicheckUrl =
     process.env.NEXT_PUBLIC_INQUICHECK_URL || "https://inquicheck.vercel.app";
 
@@ -45,6 +45,28 @@ export default function PasaportePage() {
     ratioEsfuerzo: number;
   } | null>(null);
   const [errorIa, setErrorIa] = useState<string | null>(null);
+
+  if (usuario?.rol === "propietario") {
+    return (
+      <AppShell>
+        <div className="max-w-xl mx-auto px-4 py-16 text-center space-y-4">
+          <h1 className="font-editorial text-3xl text-primary">
+            Pasaporte exclusivo para Inquilinos
+          </h1>
+          <p className="text-sm text-on-surface-variant">
+            Como propietario puedes consultar tus expedientes y pagos desde tu
+            panel.
+          </p>
+          <a
+            href="/propietario"
+            className="btn-press inline-flex px-6 py-3 rounded-xl bg-primary text-on-primary text-xs font-semibold"
+          >
+            Ir a mi Panel de Propietario
+          </a>
+        </div>
+      </AppShell>
+    );
+  }
 
   const generarEnlaceCompartible = () => {
     const base =

@@ -21,6 +21,7 @@ type SubTab = "activas" | "nueva" | "historico";
 
 export default function AveriasPage() {
   const {
+    usuario,
     viviendaActiva,
     crearIncidencia,
     darConformidadInquilino,
@@ -37,6 +38,28 @@ export default function AveriasPage() {
   const [analizando, setAnalizando] = useState(false);
   const [errorIa, setErrorIa] = useState<string | null>(null);
   const [facturas, setFacturas] = useState<Record<string, string>>({});
+
+  if (usuario?.rol === "propietario") {
+    return (
+      <AppShell>
+        <div className="max-w-xl mx-auto px-4 py-16 text-center space-y-4">
+          <h1 className="font-editorial text-3xl text-primary">
+            Gestión de averías para Propietarios
+          </h1>
+          <p className="text-sm text-on-surface-variant">
+            Como propietario, aprueba presupuestos, envía técnicos o deniega
+            expedientes desde tu panel de Expedientes.
+          </p>
+          <a
+            href="/propietario"
+            className="btn-press inline-flex px-6 py-3 rounded-xl bg-primary text-on-primary text-xs font-semibold"
+          >
+            Ir a mis Expedientes
+          </a>
+        </div>
+      </AppShell>
+    );
+  }
 
   const activas = viviendaActiva.incidencias.filter(
     (i) =>

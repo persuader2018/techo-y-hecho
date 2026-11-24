@@ -17,6 +17,7 @@ type SubTab = "pendientes" | "historico" | "nuevo";
 
 export default function PropietarioPage() {
   const {
+    usuario,
     viviendas,
     viviendaActiva,
     seleccionarVivienda,
@@ -40,6 +41,28 @@ export default function PropietarioPage() {
   const [emailInq, setEmailInq] = useState("");
   const [tensionada, setTensionada] = useState(false);
   const [codigoCreado, setCodigoCreado] = useState<string | null>(null);
+
+  if (usuario && usuario.rol !== "propietario") {
+    return (
+      <AppShell>
+        <div className="max-w-xl mx-auto px-4 py-16 text-center space-y-4">
+          <h1 className="font-editorial text-3xl text-primary">
+            Sección exclusiva para Propietarios
+          </h1>
+          <p className="text-sm text-on-surface-variant">
+            Has iniciado sesión como Inquilino. Para entrar como propietario,
+            cierra sesión y accede con tu perfil de propietario.
+          </p>
+          <a
+            href="/portal"
+            className="btn-press inline-flex px-6 py-3 rounded-xl bg-primary text-on-primary text-xs font-semibold"
+          >
+            Volver a Mi Piso
+          </a>
+        </div>
+      </AppShell>
+    );
+  }
 
   const pendientes = viviendaActiva.incidencias.filter(
     (i) => i.estado === "pendiente_aprobacion"

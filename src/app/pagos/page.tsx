@@ -153,14 +153,17 @@ export default function PagosPage() {
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
             <h1 className="font-editorial text-3xl sm:text-4xl text-primary font-normal">
-              Pagos y Facturas
+              {esPropietario ? "Verificación de Pagos" : "Pagos y Facturas"}
             </h1>
             <p className="text-sm text-on-surface-variant mt-1">
-              {viviendaActiva.alias} · Rentas separadas de suministros
+              {viviendaActiva.alias} ·{" "}
+              {esPropietario
+                ? "Confirma únicamente los pagos ya realizados por tu inquilino"
+                : "Rentas separadas de suministros"}
             </p>
           </div>
 
-          {/* Submenú de 3 pestañas claras */}
+          {/* Submenú de pestañas según rol */}
           <div className="inline-flex bg-surface-container-low p-1 rounded-xl border border-outline-variant/40 self-start sm:self-auto">
             <button
               type="button"
@@ -186,18 +189,20 @@ export default function PagosPage() {
               <Zap className="w-3.5 h-3.5" />
               Suministros
             </button>
-            <button
-              type="button"
-              onClick={() => setTab("nuevo")}
-              className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all inline-flex items-center gap-1.5 ${
-                tab === "nuevo"
-                  ? "bg-secondary text-on-secondary shadow-xs"
-                  : "text-on-surface-variant hover:text-primary"
-              }`}
-            >
-              <Plus className="w-3.5 h-3.5" />
-              Subir / IA
-            </button>
+            {!esPropietario && (
+              <button
+                type="button"
+                onClick={() => setTab("nuevo")}
+                className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all inline-flex items-center gap-1.5 ${
+                  tab === "nuevo"
+                    ? "bg-secondary text-on-secondary shadow-xs"
+                    : "text-on-surface-variant hover:text-primary"
+                }`}
+              >
+                <Plus className="w-3.5 h-3.5" />
+                Subir / IA
+              </button>
+            )}
           </div>
         </div>
 
@@ -365,13 +370,19 @@ export default function PagosPage() {
                         </div>
                       )}
 
+                      {esPropietario && mov.estado === "pendiente" && (
+                        <span className="text-xs text-outline font-medium">
+                          Esperando pago del inquilino
+                        </span>
+                      )}
+
                       {esPropietario && mov.estado === "pagado_inquilino" && (
                         <button
                           type="button"
                           onClick={() => verificarMovimientoPropietario(mov.id)}
-                          className="btn-press px-3.5 py-2 rounded-xl bg-secondary text-on-secondary text-xs font-semibold"
+                          className="btn-press px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold"
                         >
-                          Confirmar cobro
+                          Verificar pago recibido
                         </button>
                       )}
                     </div>

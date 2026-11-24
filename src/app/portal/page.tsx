@@ -22,6 +22,28 @@ export default function PortalInquilinoPage() {
   const [codigoInput, setCodigoInput] = useState("");
   const [msgVinculo, setMsgVinculo] = useState<string | null>(null);
 
+  if (usuario?.rol === "propietario") {
+    return (
+      <AppShell>
+        <div className="max-w-xl mx-auto px-4 py-16 text-center space-y-4">
+          <h1 className="font-editorial text-3xl text-primary">
+            Sección exclusiva para Inquilinos
+          </h1>
+          <p className="text-sm text-on-surface-variant">
+            Has iniciado sesión como Propietario. Accede a tus expedientes y
+            verificación de pagos desde tu panel.
+          </p>
+          <Link
+            href="/propietario"
+            className="btn-press inline-flex px-6 py-3 rounded-xl bg-primary text-on-primary text-xs font-semibold"
+          >
+            Ir a mi Panel de Propietario
+          </Link>
+        </div>
+      </AppShell>
+    );
+  }
+
   const rentasPendientes = viviendaActiva.movimientos.filter(
     (m) => m.tipo === "renta" && m.estado === "pendiente"
   );
