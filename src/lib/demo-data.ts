@@ -84,6 +84,13 @@ export interface ViviendaContratoDemo {
   resguardoFianzaVerificado: boolean;
   propietarioNombre: string;
   propietarioEmail: string;
+  propietarioTelefono?: string;
+  autorizaCompartirTelefono?: boolean;
+  estadoContrato?: "activo" | "finalizado";
+  fechaFinalizacion?: string;
+  fianzaDevueltaCompleta?: boolean;
+  notaCierreFianza?: string;
+  ultimaActualizacionRenta?: string;
   inquilinoNombre: string;
   inquilinoEmail: string;
   idPasaporteInquicheck: string;
@@ -119,6 +126,9 @@ export const VIVIENDAS_DEMO: ViviendaContratoDemo[] = [
     resguardoFianzaVerificado: true,
     propietarioNombre: "Javier Mendoza",
     propietarioEmail: "javier.mendoza@ejemplo.es",
+    propietarioTelefono: "612 345 678",
+    autorizaCompartirTelefono: true,
+    estadoContrato: "activo",
     inquilinoNombre: "Elena Soler",
     inquilinoEmail: "elena.soler@ejemplo.es",
     idPasaporteInquicheck: "#IC-E42GC2",

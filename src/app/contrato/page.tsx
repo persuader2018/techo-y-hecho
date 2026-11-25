@@ -14,6 +14,7 @@ import {
 import AppShell from "@/components/AppShell";
 import { useApp } from "@/components/AppContext";
 import { calcularActualizacionRenta } from "@/lib/calculadora-renta-2026";
+import { subirImagenSeguro } from "@/lib/storage";
 
 type SubTab = "asesor" | "fianza" | "subida";
 
@@ -45,10 +46,12 @@ export default function ContratoPage() {
   const [fotoUrlTemp, setFotoUrlTemp] = useState<string | null>(null);
 
   // Calculadora RDL 29/2026
-  const [rentaCalc, setRentaCalc] = useState(viviendaActiva.rentaBaseEur);
-  const [fechaFirma, setFechaFirma] = useState(viviendaActiva.fechaInicio);
+  const [rentaCalc, setRentaCalc] = useState(viviendaActiva?.rentaBaseEur ?? 1000);
+  const [fechaFirma, setFechaFirma] = useState(
+    viviendaActiva?.fechaInicio ?? "2025-01-15"
+  );
   const [zonaTensionada, setZonaTensionada] = useState(
-    viviendaActiva.esZonaTensionada
+    viviendaActiva?.esZonaTensionada ?? false
   );
   const [superaIndice, setSuperaIndice] = useState(false);
 
@@ -56,7 +59,7 @@ export default function ContratoPage() {
     rentaActualEur: Number(rentaCalc) || 0,
     fechaFirmaContrato: fechaFirma,
     fechaRevision: "2026-12-01",
-    tipoContrato: viviendaActiva.tipoContrato,
+    tipoContrato: viviendaActiva?.tipoContrato ?? "habitual",
     esZonaTensionada: zonaTensionada,
     superaIndiceReferenciaTensionada: superaIndice,
     iravVigentePct: 2.57,
@@ -87,14 +90,17 @@ export default function ContratoPage() {
     }
   };
 
-  const handleArchivoFotoFianza = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleArchivoFotoFianza = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === "string") setFotoUrlTemp(reader.result);
-    };
-    reader.readAsDataURL(file);
+    const url = await subirImagenSeguro(
+      file,
+      "fianza",
+      Boolean(usuario?.esDemo)
+    );
+    setFotoUrlTemp(url);
   };
 
   const handleGuardarFotoFianza = (e: React.FormEvent) => {
@@ -120,7 +126,7 @@ export default function ContratoPage() {
               Asesor Legal, Contrato y Fianza
             </h1>
             <p className="text-sm text-on-surface-variant mt-1">
-              {viviendaActiva.alias} · Ley 12/2023 y RDL 29/2026
+              {viviendaActiva?.alias || "Asistente normativo"} · Ley 12/2023 y RDL 29/2026
             </p>
           </div>
 
@@ -137,18 +143,20 @@ export default function ContratoPage() {
               <MessageSquare className="w-3.5 h-3.5" />
               Asesor IA
             </button>
-            <button
-              type="button"
-              onClick={() => setTab("fianza")}
-              className={`px-3.5 py-2 rounded-lg text-xs font-semibold inline-flex items-center gap-1.5 ${
-                tab === "fianza"
-                  ? "bg-primary text-on-primary shadow-xs"
-                  : "text-on-surface-variant hover:text-primary"
-              }`}
-            >
-              <Camera className="w-3.5 h-3.5" />
-              Fianza y Fotos ({viviendaActiva.fotosEstadoInicial.length})
-            </button>
+            {viviendaActiva && (
+              <button
+                type="button"
+                onClick={() => setTab("fianza")}
+                className={`px-3.5 py-2 rounded-lg text-xs font-semibold inline-flex items-center gap-1.5 ${
+                  tab === "fianza"
+                    ? "bg-primary text-on-primary shadow-xs"
+                    : "text-on-surface-variant hover:text-primary"
+                }`}
+              >
+                <Camera className="w-3.5 h-3.5" />
+                Fianza y Fotos ({viviendaActiva.fotosEstadoInicial.length})
+              </button>
+            )}
             <button
               type="button"
               onClick={() => setTab("subida")}
@@ -250,7 +258,7 @@ export default function ContratoPage() {
         )}
 
         {/* SUBMENÚ 2: CONTRATO, FIANZA Y FOTOS DEL ESTADO INICIAL */}
-        {tab === "fianza" && (
+        {tab === "fianza" && viviendaActiva && (
           <div className="space-y-6 animate-enter">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div className="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/40 flex items-center justify-between">

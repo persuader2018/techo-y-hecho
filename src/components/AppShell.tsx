@@ -87,7 +87,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 </span>
                 <select
                   aria-label="Seleccionar vivienda activa"
-                  value={viviendaActiva.id}
+                  value={viviendaActiva?.id || ""}
                   onChange={(e) => seleccionarVivienda(e.target.value)}
                   className="bg-transparent text-xs font-medium text-primary focus:outline-none cursor-pointer pr-1"
                 >
@@ -190,21 +190,18 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
           <div className="md:col-span-4 space-y-2.5">
             <p className="text-[11px] font-semibold uppercase tracking-widest text-outline">
-              Antes de firmar contrato (Pre-contrato)
+              Pasaporte de Solvencia Integrado (Custodia Cero)
             </p>
             <p className="text-xs text-on-surface-variant leading-relaxed">
-              Verifica solvencia sin compartir DNI ni nóminas con nuestra app
-              hermana.
+              Audita tu solvencia laboral y tu historial de pagos dentro de
+              Techo y Hecho sin guardar DNI ni nóminas.
             </p>
-            <a
-              href={inquicheckUrl}
-              target="_blank"
-              rel="noopener noreferrer"
+            <Link
+              href="/pasaporte"
               className="btn-press inline-flex items-center gap-1.5 text-xs font-semibold text-secondary hover:text-primary underline underline-offset-4"
             >
-              Ir a InquiCheck · Pasaporte de Solvencia
-              <ExternalLink className="w-3.5 h-3.5" />
-            </a>
+              Crear o consultar mi Pasaporte
+            </Link>
           </div>
 
           <div className="md:col-span-3 space-y-2">

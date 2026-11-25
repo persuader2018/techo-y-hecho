@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import AppShell from "@/components/AppShell";
 import { useApp } from "@/components/AppContext";
+import { subirImagenSeguro } from "@/lib/storage";
 
 type SubTab = "activas" | "nueva" | "historico";
 
@@ -61,6 +62,27 @@ export default function AveriasPage() {
     );
   }
 
+  if (!viviendaActiva) {
+    return (
+      <AppShell>
+        <div className="max-w-xl mx-auto px-4 py-14 text-center space-y-4">
+          <img
+            src="/images/llaves-contrato.jpg"
+            alt="Sin vivienda vinculada"
+            className="w-48 h-32 rounded-2xl object-cover mx-auto border border-outline-variant/50"
+          />
+          <h1 className="font-editorial text-3xl text-primary">
+            Vincula tu vivienda primero
+          </h1>
+          <p className="text-sm text-on-surface-variant">
+            Cuando vincules el código del piso en Mi Piso podrás reportar
+            averías con fotos y recibir el dictamen de la IA.
+          </p>
+        </div>
+      </AppShell>
+    );
+  }
+
   const activas = viviendaActiva.incidencias.filter(
     (i) =>
       i.estado === "pendiente_aprobacion" ||
@@ -74,18 +96,17 @@ export default function AveriasPage() {
       i.estado === "descuento_aplicado"
   );
 
-  const handleSubirFotos = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSubirFotos = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
-    Array.from(files).forEach((file) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        if (typeof reader.result === "string") {
-          setFotosPreview((prev) => [...prev, reader.result as string]);
-        }
-      };
-      reader.readAsDataURL(file);
-    });
+    for (const file of Array.from(files)) {
+      const url = await subirImagenSeguro(
+        file,
+        "averias",
+        Boolean(usuario?.esDemo)
+      );
+      setFotosPreview((prev) => [...prev, url]);
+    }
   };
 
   const handleReportar = async (e: React.FormEvent) => {

@@ -44,28 +44,101 @@ export default function PortalInquilinoPage() {
     );
   }
 
-  const rentasPendientes = viviendaActiva.movimientos.filter(
-    (m) => m.tipo === "renta" && m.estado === "pendiente"
-  );
-  const suministrosPendientes = viviendaActiva.movimientos.filter(
-    (m) => m.tipo !== "renta" && m.tipo !== "compensacion" && m.estado === "pendiente"
-  );
-  const averiasActivas = viviendaActiva.incidencias.filter(
-    (i) => i.estado !== "resuelta_conforme" && i.estado !== "denegada" && i.estado !== "descuento_aplicado"
-  );
-
-  const copiarCodigo = () => {
-    navigator.clipboard?.writeText(viviendaActiva.codigoVinculacion);
-    setCopiado(true);
-    setTimeout(() => setCopiado(false), 1800);
-  };
-
   const handleVincular = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!codigoInput.trim()) return;
     const res = await vincularPorCodigo(codigoInput);
     setMsgVinculo(res.mensaje);
     if (res.ok) setCodigoInput("");
+  };
+
+  // Estado vacío elegante para cuentas nuevas sin vivienda vinculada aún
+  if (!viviendaActiva) {
+    return (
+      <AppShell>
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-12 space-y-8 animate-enter">
+          <div className="bg-surface-container-lowest rounded-2xl overflow-hidden border border-outline-variant/40 shadow-sm grid grid-cols-1 md:grid-cols-12">
+            <div className="md:col-span-5 h-56 md:h-auto">
+              <img
+                src="/images/llaves-contrato.jpg"
+                alt="Llaves de tu nueva vivienda"
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div className="md:col-span-7 p-8 space-y-5 flex flex-col justify-center">
+              <span className="text-xs font-bold uppercase tracking-widest text-secondary">
+                Bienvenido, {(usuario?.nombre || "Inquilino").split(" ")[0]}
+              </span>
+              <h1 className="font-editorial text-3xl text-primary font-normal">
+                Tu cuenta está lista y limpia
+              </h1>
+              <p className="text-sm text-on-surface-variant leading-relaxed">
+                Todavía no tienes ninguna vivienda vinculada. Pide el{" "}
+                <strong>código de piso</strong> a tu propietario para conectar
+                vuestro contrato, o crea ya tu{" "}
+                <strong>Pasaporte de Solvencia</strong> para buscar piso.
+              </p>
+
+              <form onSubmit={handleVincular} className="flex flex-col sm:flex-row gap-2.5">
+                <input
+                  type="text"
+                  value={codigoInput}
+                  onChange={(e) => setCodigoInput(e.target.value.toUpperCase())}
+                  placeholder="Código del piso (ej. MAD-2026-412)"
+                  className="flex-1 px-4 py-3 rounded-xl bg-surface-container-low text-sm font-mono uppercase text-primary border border-outline-variant/50"
+                />
+                <button
+                  type="submit"
+                  className="btn-press px-5 py-3 rounded-xl bg-primary text-on-primary text-xs font-bold"
+                >
+                  Vincular piso
+                </button>
+              </form>
+              {msgVinculo && (
+                <p className="text-xs font-semibold text-secondary">{msgVinculo}</p>
+              )}
+
+              <div className="pt-2 flex flex-wrap gap-3">
+                <Link
+                  href="/pasaporte"
+                  className="btn-press px-4 py-2.5 rounded-xl bg-secondary text-on-secondary text-xs font-semibold inline-flex items-center gap-1.5"
+                >
+                  <Award className="w-4 h-4" />
+                  Crear mi Pasaporte de Solvencia
+                </Link>
+                <Link
+                  href="/contrato"
+                  className="btn-press px-4 py-2.5 rounded-xl bg-surface-container text-primary text-xs font-semibold inline-flex items-center gap-1.5"
+                >
+                  <Scale className="w-4 h-4" />
+                  Consultar al Asesor Legal IA
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </AppShell>
+    );
+  }
+
+  const rentasPendientes = viviendaActiva.movimientos.filter(
+    (m) => m.tipo === "renta" && m.estado === "pendiente"
+  );
+  const suministrosPendientes = viviendaActiva.movimientos.filter(
+    (m) =>
+      m.tipo !== "renta" && m.tipo !== "compensacion" && m.estado === "pendiente"
+  );
+  const averiasActivas = viviendaActiva.incidencias.filter(
+    (i) =>
+      i.estado !== "resuelta_conforme" &&
+      i.estado !== "denegada" &&
+      i.estado !== "descuento_aplicado"
+  );
+
+  const copiarCodigo = () => {
+    navigator.clipboard?.writeText(viviendaActiva.codigoVinculacion);
+    setCopiado(true);
+    setTimeout(() => setCopiado(false), 1800);
   };
 
   return (
@@ -100,12 +173,14 @@ export default function PortalInquilinoPage() {
                   )}
                 </button>
                 <span className="px-3 py-1 rounded-full bg-secondary-container/70 text-on-secondary-container text-xs font-semibold">
-                  Fianza depositada ({viviendaActiva.fianzaEur} €)
+                  {viviendaActiva.estadoContrato === "finalizado"
+                    ? "Contrato finalizado"
+                    : `Fianza: ${viviendaActiva.fianzaEur} €`}
                 </span>
               </div>
 
               <h1 className="font-editorial text-3xl sm:text-4xl text-primary font-normal">
-                Hola, {(usuario?.nombre || "Elena").split(" ")[0]}
+                Hola, {(usuario?.nombre || "Inquilino").split(" ")[0]}
               </h1>
               <p className="text-sm text-on-surface-variant">
                 {viviendaActiva.direccion} · Renta oficial:{" "}
@@ -115,20 +190,19 @@ export default function PortalInquilinoPage() {
               </p>
             </div>
 
-            <div className="flex flex-wrap gap-2">
+            <div>
               <button
                 type="button"
                 onClick={() => setMostrarVincular((v) => !v)}
                 className="btn-press inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-surface-container-low hover:bg-surface-container text-xs font-semibold text-primary"
               >
                 <KeyRound className="w-3.5 h-3.5 text-secondary" />
-                Cambiar o vincular otro piso
+                Vincular otro piso por código
               </button>
             </div>
           </div>
         </section>
 
-        {/* Formulario desplegable de vinculación (oculto hasta que se necesite) */}
         {mostrarVincular && (
           <form
             onSubmit={handleVincular}
@@ -137,9 +211,9 @@ export default function PortalInquilinoPage() {
             <input
               type="text"
               value={codigoInput}
-              onChange={(e) => setCodigoInput(e.target.value)}
-              placeholder="Introduce código (ej. MAD-2026-B o VAL-2026-A)"
-              className="w-full sm:flex-1 px-4 py-2.5 rounded-xl bg-surface-container-lowest text-sm uppercase tracking-wider text-primary border border-outline-variant/50"
+              onChange={(e) => setCodigoInput(e.target.value.toUpperCase())}
+              placeholder="Introduce código de tu propietario"
+              className="w-full sm:flex-1 px-4 py-2.5 rounded-xl bg-surface-container-lowest text-sm font-mono uppercase text-primary border border-outline-variant/50"
             />
             <button
               type="submit"
@@ -155,7 +229,7 @@ export default function PortalInquilinoPage() {
           </form>
         )}
 
-        {/* 3 Tarjetas de acción directa con alto contraste */}
+        {/* 3 Tarjetas de acción directa */}
         <section className="grid grid-cols-1 md:grid-cols-3 gap-5">
           <Link
             href="/pagos"
@@ -247,21 +321,23 @@ export default function PortalInquilinoPage() {
           </Link>
         </section>
 
-        {/* Banner compacto del Pasaporte */}
+        {/* Banner Pasaporte integrado */}
         <Link
           href="/pasaporte"
           className="editorial-card bg-primary text-on-primary rounded-2xl p-6 sm:p-7 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
         >
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-white/10 text-secondary-fixed flex items-center justify-center shrink-0">
-              <Award className="w-6 h-6" />
-            </div>
+            <img
+              src="/images/escudo-confianza.jpg"
+              alt="Pasaporte de Buen Inquilino"
+              className="w-14 h-14 rounded-xl object-cover shrink-0 border border-white/15"
+            />
             <div>
               <span className="text-[11px] font-semibold uppercase tracking-widest text-secondary-fixed">
-                Pasaporte de Buen Inquilino · {viviendaActiva.certificadoInquilino.puntuacion}/100
+                Pasaporte de Buen Inquilino y Solvencia
               </span>
               <h3 className="font-editorial text-2xl font-normal">
-                Descarga tu certificado PDF y enlace para futuros pisos
+                Tu historial real + auditoría Custodia Cero en PDF y enlace
               </h3>
             </div>
           </div>

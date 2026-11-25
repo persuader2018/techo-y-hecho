@@ -8,7 +8,6 @@ import {
   Building2,
   CheckCircle2,
   CreditCard,
-  ExternalLink,
   Scale,
   UserCheck,
   Wrench,
@@ -19,8 +18,6 @@ import { useApp } from "@/components/AppContext";
 export default function HomePage() {
   const router = useRouter();
   const { entrarDemo } = useApp();
-  const inquicheckUrl =
-    process.env.NEXT_PUBLIC_INQUICHECK_URL || "https://inquicheck.vercel.app";
 
   const abrirDemo = (rol: "inquilino" | "propietario") => {
     entrarDemo(rol);
@@ -29,8 +26,8 @@ export default function HomePage() {
 
   return (
     <AppShell>
-      {/* Hero limpio y respirable */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-16 lg:pt-20 lg:pb-24 animate-enter">
+      {/* Hero editorial vistoso */}
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-14 lg:pt-16 lg:pb-20 animate-enter">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
           <div className="lg:col-span-6 space-y-6">
             <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-secondary-container/70 text-on-secondary-container text-xs font-semibold">
@@ -44,8 +41,8 @@ export default function HomePage() {
             </h1>
 
             <p className="text-base sm:text-lg text-on-surface-variant leading-relaxed max-w-lg">
-              Rentas, suministros, averías con mediador IA y tu Pasaporte de
-              Buen Inquilino en un espacio sencillo para casero e inquilino.
+              Rentas, suministros, averías con fotos e IA y tu Pasaporte de Buen
+              Inquilino y Solvencia en una sola plataforma sencilla.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3 pt-1">
@@ -72,25 +69,40 @@ export default function HomePage() {
                 href="/acceso"
                 className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary underline underline-offset-4 hover:text-secondary"
               >
-                Iniciar sesión o crear cuenta gratis
+                Crear cuenta gratis (empieza desde cero)
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
           </div>
 
-          <div className="lg:col-span-6">
-            <div className="editorial-photo-wrap rounded-2xl overflow-hidden shadow-lg border border-outline-variant/40 bg-surface-container-lowest">
+          {/* Collage visual editorial (2 fotos reales) */}
+          <div className="lg:col-span-6 grid grid-cols-12 gap-4 items-end">
+            <div className="col-span-12 editorial-photo-wrap rounded-2xl overflow-hidden shadow-lg border border-outline-variant/40">
               <img
                 src="/images/vivienda-madrid.jpg"
                 alt="Salón luminoso de vivienda en alquiler"
-                className="w-full h-[300px] sm:h-[390px] object-cover"
+                className="w-full h-[260px] sm:h-[320px] object-cover"
+              />
+            </div>
+            <div className="col-span-7 editorial-photo-wrap rounded-2xl overflow-hidden shadow-md border border-outline-variant/40">
+              <img
+                src="/images/llaves-contrato.jpg"
+                alt="Llaves de vivienda sobre mesa de roble"
+                className="w-full h-[130px] object-cover"
+              />
+            </div>
+            <div className="col-span-5 editorial-photo-wrap rounded-2xl overflow-hidden shadow-md border border-outline-variant/40">
+              <img
+                src="/images/apartamento-editorial.jpg"
+                alt="Cocina abierta moderna en apartamento español"
+                className="w-full h-[130px] object-cover"
               />
             </div>
           </div>
         </div>
       </section>
 
-      {/* 4 accesos esquemáticos (1 sola frase por tarjeta) */}
+      {/* 4 accesos visuales */}
       <section className="bg-surface-container-low/70 border-y border-outline-variant/40 py-14">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
@@ -99,28 +111,28 @@ export default function HomePage() {
                 href: "/pagos",
                 icon: CreditCard,
                 titulo: "Rentas y Suministros",
-                texto: "Ve de un vistazo qué está pagado y qué queda pendiente.",
+                texto: "Ve al instante qué está pagado y qué queda pendiente.",
                 bg: "bg-secondary-container/60 text-secondary",
               },
               {
                 href: "/averias",
                 icon: Wrench,
                 titulo: "Averías con Fotos e IA",
-                texto: "Sube fotos, conoce quién paga y aprueba presupuestos.",
+                texto: "Sube fotos, aprueba presupuestos y da conformidad.",
                 bg: "bg-amber-100 text-amber-800",
               },
               {
                 href: "/contrato",
                 icon: Scale,
                 titulo: "Asesor Legal y Fianza",
-                texto: "Pregunta dudas de la Ley de Vivienda y guarda fotos iniciales.",
+                texto: "Dudas sobre la Ley de Vivienda, tope 2 % y fotos iniciales.",
                 bg: "bg-surface-container text-primary",
               },
               {
                 href: "/pasaporte",
                 icon: Award,
-                titulo: "Pasaporte en PDF",
-                texto: "Descarga tu historial verificado junto a InquiCheck.",
+                titulo: "Pasaporte y Solvencia",
+                texto: "Historial real + auditoría Custodia Cero en PDF y enlace.",
                 bg: "bg-secondary-container/70 text-secondary",
               },
             ].map((item) => {
@@ -151,30 +163,35 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Franja simple InquiCheck */}
+      {/* Bloque visual Pasaporte integrado */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
-        <div className="bg-primary text-on-primary rounded-2xl p-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-1.5 max-w-xl">
-            <span className="text-[11px] font-semibold uppercase tracking-widest text-secondary-fixed">
-              Antes de firmar contrato
-            </span>
-            <h2 className="font-editorial text-2xl sm:text-3xl font-normal">
-              ¿Necesitas verificar solvencia sin compartir tu DNI?
-            </h2>
-            <p className="text-sm text-primary-fixed-dim">
-              Usa nuestra app hermana InquiCheck y luego adjunta tu certificado
-              aquí.
-            </p>
+        <div className="bg-primary text-on-primary rounded-2xl p-8 sm:p-10 flex flex-col md:flex-row items-center justify-between gap-8">
+          <div className="flex items-center gap-5 max-w-2xl">
+            <img
+              src="/images/escudo-confianza.jpg"
+              alt="Emblema de confianza Techo y Hecho"
+              className="w-20 h-20 rounded-2xl object-cover shrink-0 border border-white/20"
+            />
+            <div className="space-y-1.5">
+              <span className="text-[11px] font-semibold uppercase tracking-widest text-secondary-fixed">
+                Todo integrado · Protocolo Custodia Cero
+              </span>
+              <h2 className="font-editorial text-2xl sm:text-3xl font-normal">
+                Pasaporte de Buen Inquilino + Solvencia en un solo documento
+              </h2>
+              <p className="text-sm text-primary-fixed-dim">
+                Combina tu historial real de pagos verificados con la auditoría
+                de Vida Laboral y Nómina sin almacenar DNI ni datos bancarios.
+              </p>
+            </div>
           </div>
-          <a
-            href={inquicheckUrl}
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            href="/pasaporte"
             className="btn-press px-6 py-3.5 rounded-xl bg-surface text-primary text-sm font-semibold inline-flex items-center justify-center gap-2 shrink-0 hover:bg-surface-container-high"
           >
-            Abrir InquiCheck
-            <ExternalLink className="w-4 h-4" />
-          </a>
+            Abrir Pasaporte
+            <ArrowRight className="w-4 h-4" />
+          </Link>
         </div>
       </section>
     </AppShell>

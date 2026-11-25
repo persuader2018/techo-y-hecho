@@ -60,6 +60,28 @@ export default function PagosPage() {
   const [stripeInfo, setStripeInfo] = useState<string | null>(null);
 
   // Separación clara: Rentas vs Suministros
+  if (!viviendaActiva) {
+    return (
+      <AppShell>
+        <div className="max-w-xl mx-auto px-4 py-14 text-center space-y-4">
+          <img
+            src="/images/llaves-contrato.jpg"
+            alt="Sin vivienda vinculada"
+            className="w-48 h-32 rounded-2xl object-cover mx-auto border border-outline-variant/50"
+          />
+          <h1 className="font-editorial text-3xl text-primary">
+            Aún no hay pagos registrados
+          </h1>
+          <p className="text-sm text-on-surface-variant">
+            {esPropietario
+              ? "Da de alta tu primera vivienda para empezar a verificar rentas y recibos."
+              : "Vincula el código de tu vivienda en Mi Piso para ver tus rentas y suministros."}
+          </p>
+        </div>
+      </AppShell>
+    );
+  }
+
   const rentas = viviendaActiva.movimientos.filter(
     (m) => m.tipo === "renta" || m.tipo === "compensacion"
   );
